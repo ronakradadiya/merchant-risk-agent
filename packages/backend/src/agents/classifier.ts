@@ -26,18 +26,29 @@ You have access to 4 investigative tools. USE THEM before making your final deci
 1. check_domain_age — Check a merchant's website domain registration date, SSL, and Google indexing (for P4)
 2. web_search — Search for fraud reports, complaints, or scam alerts about the merchant (for P1, P3)
 3. check_upi_pattern — Analyze the UPI VPA for typosquatting, brand impersonation, or scam patterns (for P2)
-4. check_india_compliance — Check location consistency via phone prefix + IP geolocation + server hosting, and GST compliance via GSTIN format validation + state code match + active status lookup (for P5, P6)
+4. check_india_compliance — Validate GST compliance via GSTIN format validation + state code match + active status lookup (for P5)
 
 ## Instructions
-1. First, call the relevant tools to gather signals. You should call check_upi_pattern for every merchant. Call check_domain_age if a website URL is provided. Call web_search to look for fraud complaints. Call check_india_compliance to verify location and GST signals for P5 and P6.
-2. After receiving tool results, evaluate the merchant against ALL 7 policies using both the merchant data and tool signals. P7 (AI-generated profile) requires no tool — evaluate it directly from the merchant input text.
-3. Calculate a risk score from 0-100 based on the severity and number of policies triggered:
-   - critical policy triggered: +25-30 points each
-   - high policy triggered: +15-20 points each
-   - medium policy triggered: +8-12 points each
-   - No policies triggered: score should be 5-15
-4. Determine risk level: low (0-39), medium (40-69), high (70-100)
-5. Determine recommended action: approve (low), review (medium), reject (high)
+1. First, call the relevant tools to gather signals. You should call check_upi_pattern for every merchant. Call check_domain_age only if a website URL is provided (skip it if no website). Call web_search to look for fraud complaints. Call check_india_compliance to verify GST signals for P5.
+2. After receiving tool results, evaluate the merchant against ALL 5 policies using both the merchant data and tool signals.
+3. For P4 specifically: SKIP this policy entirely if no website URL was provided. Only evaluate P4 when a website exists AND all 4 conditions are met (domain < 30 days, no SSL, 0 indexed pages, another policy also triggered).
+4. Calculate risk score using simple additive scoring:
+   BASE SCORE: 10
+   ADD per triggered policy: CRITICAL = +35 pts, HIGH = +25 pts, MEDIUM = +30 pts
+   Cap at 100. Do NOT trigger policies that do not clearly apply — accuracy matters more
+   than finding violations. When in doubt about whether a policy applies, do NOT trigger it.
+   CRITICAL calibration checks:
+   - P1 requires account age < 30 days AND (txns > 500 OR monthly GMV > Rs 25 lakh). If account is ≥ 30 days old, P1 does NOT apply — do not trigger it.
+   - P3 requires an ONLINE platform AND electronics AND < 60 days old AND avg > Rs 10,000. Do NOT trigger for clothing, food, groceries, or physical retail.
+   - P4 requires a website URL to be provided. No website = skip entirely.
+   - P5 requires GMV > Rs 2,00,000/month with no GST (or invalid GSTIN). At low GMV, do NOT trigger P5.
+5. Determine risk level: low (0-39), medium (40-69), high (70-100)
+6. Determine recommended action: approve (low), review (medium), reject (high)
+7. Assign a confidence score (0-100) based on signal quality:
+   - 80-100 (high): All relevant tools returned data, signals are consistent and unambiguous
+   - 50-79 (medium): Some tools failed or returned partial data, or signals conflict slightly
+   - 0-49 (low): Key tools failed, major signals missing, or signals strongly contradict each other
+8. Write a one-sentence confidence reason explaining the certainty level.
 
 ## Final Output Format
 When you have gathered enough information and are ready to decide, respond with ONLY a valid JSON object (no markdown, no code fences):
@@ -45,6 +56,8 @@ When you have gathered enough information and are ready to decide, respond with 
   "riskScore": <number 0-100>,
   "riskLevel": "low" | "medium" | "high",
   "recommendedAction": "approve" | "review" | "reject",
+  "confidenceScore": <number 0-100>,
+  "confidenceReason": "<one sentence explaining confidence level>",
   "policiesTriggered": ["<policyId>: <policyName> - <brief reason>", ...],
   "policiesPassed": ["<policyId>: <policyName>", ...],
   "reasoning": "<2-3 sentence explanation incorporating tool findings>"
@@ -104,6 +117,8 @@ export async function classifyMerchant(input: MerchantInput): Promise<RiskDecisi
         riskScore: parsed.riskScore,
         riskLevel: parsed.riskLevel,
         recommendedAction: parsed.recommendedAction,
+        confidenceScore: parsed.confidenceScore,
+        confidenceReason: parsed.confidenceReason,
         policiesTriggered: parsed.policiesTriggered,
         policiesPassed: parsed.policiesPassed,
         toolSignals,

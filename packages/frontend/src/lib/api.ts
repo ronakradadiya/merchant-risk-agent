@@ -39,3 +39,19 @@ export function useListReviews() {
     queryFn: () => fetchJson<RiskDecision[]>('/reviews'),
   })
 }
+
+export interface PolicyAnalytics {
+  totalReviews: number
+  last30Days: number
+  policyFrequency: { policyId: string; policyName: string; count: number; percentage: number }[]
+  verdictBreakdown: { approve: number; review: number; reject: number }
+  avgRiskScore: number
+  avgConfidence: number
+}
+
+export function useAnalytics() {
+  return useQuery({
+    queryKey: ['analytics'],
+    queryFn: () => fetchJson<PolicyAnalytics>('/analytics'),
+  })
+}

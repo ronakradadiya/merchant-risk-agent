@@ -42,3 +42,14 @@ export async function listDynamoReviews(): Promise<RiskDecision[]> {
     (a, b) => new Date(b.reviewedAt).getTime() - new Date(a.reviewedAt).getTime()
   )
 }
+
+export async function listDynamoReviewsSince(since: string): Promise<RiskDecision[]> {
+  const result = await docClient.send(
+    new ScanCommand({
+      TableName: TABLE_NAME,
+      FilterExpression: 'reviewedAt >= :since',
+      ExpressionAttributeValues: { ':since': since },
+    })
+  )
+  return (result.Items || []) as RiskDecision[]
+}

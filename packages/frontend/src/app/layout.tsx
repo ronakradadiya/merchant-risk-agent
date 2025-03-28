@@ -4,7 +4,7 @@ import "./globals.css";
 import { Providers } from "@/lib/providers";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-import { Shield, Plus, History } from "lucide-react";
+import { Shield, Plus, History, BarChart2 } from "lucide-react";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -86,6 +86,13 @@ export default function RootLayout({
                 >
                   <History className="h-4 w-4" />
                   History
+                </Link>
+                <Link
+                  href="/analytics"
+                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg transition-all"
+                >
+                  <BarChart2 className="h-4 w-4" />
+                  Analytics
                 </Link>
               </div>
             </div>

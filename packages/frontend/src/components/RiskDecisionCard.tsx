@@ -4,6 +4,7 @@ import type { RiskDecision } from '@merchant-risk-agent/shared'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { ConfidenceScore } from '@/components/ConfidenceScore'
 import Link from 'next/link'
 import {
   ShieldAlert, ShieldCheck, ShieldX,
@@ -92,6 +93,11 @@ export function RiskDecisionCard({ decision }: { decision: RiskDecision }) {
           </div>
         </div>
       </Card>
+
+      {/* Confidence */}
+      {decision.confidenceScore != null && decision.confidenceReason && (
+        <ConfidenceScore score={decision.confidenceScore} reason={decision.confidenceReason} />
+      )}
 
       {/* Policies */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
