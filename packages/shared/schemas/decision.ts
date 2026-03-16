@@ -1,14 +1,27 @@
 import { z } from 'zod'
 
 export const ToolSignalsSchema = z.object({
+  // Tool 1 — Domain age (P4)
   domainAgeDays: z.number().optional(),
   hasSSL: z.boolean().optional(),
   googleIndexedPages: z.number().optional(),
+
+  // Tool 2 — Web search (P1, P3)
   publicComplaints: z.number().optional(),
+  webSearchSummary: z.string().optional(),
+
+  // Tool 3 — UPI pattern check (P2)
   upiTyposquatMatch: z.boolean().optional(),
   typosquatConfidence: z.number().min(0).max(1).optional(),
   linkedScamVPAs: z.number().optional(),
-  webSearchSummary: z.string().optional(),
+
+  // Tool 4 — India compliance check (P5, P6)
+  phoneStateMatch: z.boolean().optional(),
+  ipLocationMatch: z.boolean().optional(),
+  serverLocationIndia: z.boolean().optional(),
+  gstFormatValid: z.boolean().optional(),
+  gstStateMatch: z.boolean().optional(),
+  gstActiveStatus: z.boolean().optional(),
 })
 
 export const RiskDecisionSchema = z.object({

@@ -22,13 +22,14 @@ function buildSystemPrompt(policies: Policy[]): string {
 ${policyBlock}
 
 ## Available Tools
-You have access to 3 investigative tools. USE THEM before making your final decision:
-1. check_domain_age — Check a merchant's website domain registration date, SSL, and Google indexing
-2. web_search — Search for fraud reports, complaints, or scam alerts about the merchant
-3. check_upi_pattern — Analyze the UPI VPA for typosquatting, brand impersonation, or scam patterns
+You have access to 4 investigative tools. USE THEM before making your final decision:
+1. check_domain_age — Check a merchant's website domain registration date, SSL, and Google indexing (for P4)
+2. web_search — Search for fraud reports, complaints, or scam alerts about the merchant (for P1, P3)
+3. check_upi_pattern — Analyze the UPI VPA for typosquatting, brand impersonation, or scam patterns (for P2)
+4. check_india_compliance — Check location consistency via phone prefix + IP geolocation + server hosting, and GST compliance via GSTIN format validation + state code match + active status lookup (for P5, P6)
 
 ## Instructions
-1. First, call the relevant tools to gather signals. You should call check_upi_pattern for every merchant. Call check_domain_age if a website URL is provided. Call web_search to look for fraud complaints.
+1. First, call the relevant tools to gather signals. You should call check_upi_pattern for every merchant. Call check_domain_age if a website URL is provided. Call web_search to look for fraud complaints. Call check_india_compliance to verify location and GST signals for P5 and P6.
 2. After receiving tool results, evaluate the merchant against ALL 6 policies using both the merchant data and tool signals.
 3. Calculate a risk score from 0-100 based on the severity and number of policies triggered:
    - critical policy triggered: +25-30 points each
