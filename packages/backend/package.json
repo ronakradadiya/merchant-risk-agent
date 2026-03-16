@@ -5,12 +5,15 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
-    "dev": "ts-node-dev --respawn --transpile-only src/server.ts"
+    "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
+    "test:classifier": "ts-node-dev src/test-classifier.ts"
   },
   "dependencies": {
     "@merchant-risk-agent/shared": "*",
     "cors": "^2.8.5",
+    "dotenv": "^17.3.1",
     "express": "^4.21.0",
+    "openai": "^6.29.0",
     "uuid": "^10.0.0"
   },
   "devDependencies": {
