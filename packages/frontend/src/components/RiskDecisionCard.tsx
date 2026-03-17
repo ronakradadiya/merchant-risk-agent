@@ -101,6 +101,24 @@ export function RiskDecisionCard({ decision }: { decision: RiskDecision }) {
           {decision.toolSignals.upiTyposquatMatch != null && (
             <Signal label="Typosquat" value={decision.toolSignals.upiTyposquatMatch ? 'Match' : 'None'} />
           )}
+          {decision.toolSignals.phoneStateMatch != null && (
+            <Signal label="Phone State" value={decision.toolSignals.phoneStateMatch ? 'Match' : 'Mismatch'} />
+          )}
+          {decision.toolSignals.ipLocationMatch != null && (
+            <Signal label="IP Location" value={decision.toolSignals.ipLocationMatch ? 'Match' : 'Mismatch'} />
+          )}
+          {decision.toolSignals.serverLocationIndia != null && (
+            <Signal label="Server in India" value={decision.toolSignals.serverLocationIndia ? 'Yes' : 'No'} />
+          )}
+          {decision.toolSignals.gstFormatValid != null && (
+            <Signal label="GST Format" value={decision.toolSignals.gstFormatValid ? 'Valid' : 'Invalid'} />
+          )}
+          {decision.toolSignals.gstStateMatch != null && (
+            <Signal label="GST State" value={decision.toolSignals.gstStateMatch ? 'Match' : 'Mismatch'} />
+          )}
+          {decision.toolSignals.gstActiveStatus != null && (
+            <Signal label="GST Active" value={decision.toolSignals.gstActiveStatus ? 'Yes' : 'No'} />
+          )}
         </div>
       </div>
 
