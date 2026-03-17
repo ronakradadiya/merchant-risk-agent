@@ -1,8 +1,9 @@
 import * as cdk from 'aws-cdk-lib'
-import * as lambda from 'aws-cdk-lib/aws-lambda'
-import * as apigateway from 'aws-cdk-lib/aws-apigateway'
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb'
 import * as logs from 'aws-cdk-lib/aws-logs'
+import * as apigateway from 'aws-cdk-lib/aws-apigateway'
+import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs'
+import { Runtime } from 'aws-cdk-lib/aws-lambda'
 import { Construct } from 'constructs'
 import * as path from 'path'
 
@@ -21,44 +22,63 @@ export class MerchantRiskAgentStack extends cdk.Stack {
 
     const lambdaEnvironment = {
       DYNAMODB_TABLE_NAME: reviewsTable.tableName,
-      AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1',
+      NODE_OPTIONS: '--enable-source-maps',
+      OPENAI_API_KEY: process.env.OPENAI_API_KEY || '',
+      SERPER_API_KEY: process.env.SERPER_API_KEY || '',
+      WHOIS_API_KEY: process.env.WHOIS_API_KEY || '',
     }
 
+    const backendPath = path.join(__dirname, '../../backend/src')
+
     // Lambda: ReviewMerchant
-    const reviewMerchantFn = new lambda.Function(this, 'ReviewMerchantFn', {
-      runtime: lambda.Runtime.NODEJS_20_X,
-      handler: 'index.handler',
-      code: lambda.Code.fromAsset(path.join(__dirname, '../../backend/dist/functions/review-merchant')),
+    const reviewMerchantFn = new NodejsFunction(this, 'ReviewMerchantFn', {
+      runtime: Runtime.NODEJS_20_X,
+      entry: path.join(backendPath, 'functions/review-merchant/index.ts'),
+      handler: 'handler',
       timeout: cdk.Duration.seconds(30),
-      memorySize: 256,
-      environment: {
-        ...lambdaEnvironment,
-        OPENAI_API_KEY: process.env.OPENAI_API_KEY || '',
-        SERPER_API_KEY: process.env.SERPER_API_KEY || '',
-      },
+      memorySize: 512,
+      environment: lambdaEnvironment,
       logRetention: logs.RetentionDays.ONE_WEEK,
+      bundling: {
+        externalModules: ['@aws-sdk/*'],
+        sourceMap: true,
+      },
     })
 
     // Lambda: GetReview
-    const getReviewFn = new lambda.Function(this, 'GetReviewFn', {
-      runtime: lambda.Runtime.NODEJS_20_X,
-      handler: 'index.handler',
-      code: lambda.Code.fromAsset(path.join(__dirname, '../../backend/dist/functions/get-review')),
+    const getReviewFn = new NodejsFunction(this, 'GetReviewFn', {
+      runtime: Runtime.NODEJS_20_X,
+      entry: path.join(backendPath, 'functions/get-review/index.ts'),
+      handler: 'handler',
       timeout: cdk.Duration.seconds(5),
       memorySize: 128,
-      environment: lambdaEnvironment,
+      environment: {
+        DYNAMODB_TABLE_NAME: reviewsTable.tableName,
+        NODE_OPTIONS: '--enable-source-maps',
+      },
       logRetention: logs.RetentionDays.ONE_WEEK,
+      bundling: {
+        externalModules: ['@aws-sdk/*'],
+        sourceMap: true,
+      },
     })
 
     // Lambda: ListReviews
-    const listReviewsFn = new lambda.Function(this, 'ListReviewsFn', {
-      runtime: lambda.Runtime.NODEJS_20_X,
-      handler: 'index.handler',
-      code: lambda.Code.fromAsset(path.join(__dirname, '../../backend/dist/functions/list-reviews')),
+    const listReviewsFn = new NodejsFunction(this, 'ListReviewsFn', {
+      runtime: Runtime.NODEJS_20_X,
+      entry: path.join(backendPath, 'functions/list-reviews/index.ts'),
+      handler: 'handler',
       timeout: cdk.Duration.seconds(5),
       memorySize: 128,
-      environment: lambdaEnvironment,
+      environment: {
+        DYNAMODB_TABLE_NAME: reviewsTable.tableName,
+        NODE_OPTIONS: '--enable-source-maps',
+      },
       logRetention: logs.RetentionDays.ONE_WEEK,
+      bundling: {
+        externalModules: ['@aws-sdk/*'],
+        sourceMap: true,
+      },
     })
 
     // Grant DynamoDB access

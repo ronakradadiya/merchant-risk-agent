@@ -1,18 +1,31 @@
 import { RiskDecision } from '@merchant-risk-agent/shared'
+import { saveDynamoReview, getDynamoReview, listDynamoReviews } from './lib/dynamo'
 
-// In-memory store for local dev — replaced by DynamoDB in production
-const reviews = new Map<string, RiskDecision>()
+const useDynamo = !!process.env.DYNAMODB_TABLE_NAME
 
-export function saveReview(decision: RiskDecision): void {
-  reviews.set(decision.id, decision)
+// In-memory store for local dev
+const memoryStore = new Map<string, RiskDecision>()
+
+export async function saveReview(decision: RiskDecision): Promise<void> {
+  if (useDynamo) {
+    await saveDynamoReview(decision)
+  } else {
+    memoryStore.set(decision.id, decision)
+  }
 }
 
-export function getReview(id: string): RiskDecision | undefined {
-  return reviews.get(id)
+export async function getReview(id: string): Promise<RiskDecision | undefined> {
+  if (useDynamo) {
+    return (await getDynamoReview(id)) ?? undefined
+  }
+  return memoryStore.get(id)
 }
 
-export function listReviews(): RiskDecision[] {
-  return Array.from(reviews.values()).sort(
+export async function listReviews(): Promise<RiskDecision[]> {
+  if (useDynamo) {
+    return listDynamoReviews()
+  }
+  return Array.from(memoryStore.values()).sort(
     (a, b) => new Date(b.reviewedAt).getTime() - new Date(a.reviewedAt).getTime()
   )
 }

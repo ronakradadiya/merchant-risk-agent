@@ -1,4 +1,8 @@
 #!/usr/bin/env node
+import { config } from 'dotenv'
+import * as path from 'path'
+config({ path: path.join(__dirname, '../../backend/.env') })
+
 import * as cdk from 'aws-cdk-lib'
 import { MerchantRiskAgentStack } from '../lib/stack'
 
