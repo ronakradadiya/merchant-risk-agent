@@ -3,11 +3,16 @@ import { getReview } from '../store'
 
 export const getReviewRouter = Router()
 
-getReviewRouter.get('/review/:id', (req, res) => {
-  const review = getReview(req.params.id)
-  if (!review) {
-    res.status(404).json({ error: 'Review not found' })
-    return
+getReviewRouter.get('/review/:id', async (req, res) => {
+  try {
+    const review = await getReview(req.params.id)
+    if (!review) {
+      res.status(404).json({ error: 'Review not found' })
+      return
+    }
+    res.json(review)
+  } catch (err) {
+    console.error('Get review failed:', err)
+    res.status(500).json({ error: 'Failed to retrieve review' })
   }
-  res.json(review)
 })

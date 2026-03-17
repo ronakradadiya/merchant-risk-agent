@@ -18,7 +18,7 @@ reviewMerchantRouter.post('/review-merchant', async (req, res) => {
 
   try {
     const decision = await classifyMerchant(parsed.data)
-    saveReview(decision)
+    await saveReview(decision)
     res.json(decision)
   } catch (err) {
     console.error('Classification failed:', err)

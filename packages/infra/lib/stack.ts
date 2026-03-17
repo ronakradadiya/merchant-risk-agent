@@ -1,8 +1,9 @@
 import * as cdk from 'aws-cdk-lib'
-import * as lambda from 'aws-cdk-lib/aws-lambda'
-import * as apigateway from 'aws-cdk-lib/aws-apigateway'
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb'
 import * as logs from 'aws-cdk-lib/aws-logs'
+import * as apigateway from 'aws-cdk-lib/aws-apigateway'
+import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs'
+import { Runtime } from 'aws-cdk-lib/aws-lambda'
 import { Construct } from 'constructs'
 import * as path from 'path'
 
@@ -19,49 +20,63 @@ export class MerchantRiskAgentStack extends cdk.Stack {
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     })
 
-    const lambdaEnvironment = {
+    const sharedEnv = {
       DYNAMODB_TABLE_NAME: reviewsTable.tableName,
-      AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1',
+      NODE_OPTIONS: '--enable-source-maps',
     }
 
-    // Lambda: ReviewMerchant
-    const reviewMerchantFn = new lambda.Function(this, 'ReviewMerchantFn', {
-      runtime: lambda.Runtime.NODEJS_20_X,
-      handler: 'index.handler',
-      code: lambda.Code.fromAsset(path.join(__dirname, '../../backend/dist/functions/review-merchant')),
+    const bundling = {
+      minify: true,
+      sourceMap: true,
+      target: 'node20',
+      externalModules: ['@aws-sdk/*'],
+    }
+
+    const backendEntry = (fn: string) =>
+      path.join(__dirname, `../../backend/src/functions/${fn}/index.ts`)
+
+    // Lambda: ReviewMerchant (POST /review-merchant)
+    const reviewMerchantFn = new NodejsFunction(this, 'ReviewMerchantFn', {
+      runtime: Runtime.NODEJS_20_X,
+      entry: backendEntry('review-merchant'),
+      handler: 'handler',
       timeout: cdk.Duration.seconds(30),
-      memorySize: 256,
+      memorySize: 512,
       environment: {
-        ...lambdaEnvironment,
+        ...sharedEnv,
         OPENAI_API_KEY: process.env.OPENAI_API_KEY || '',
         SERPER_API_KEY: process.env.SERPER_API_KEY || '',
+        WHOIS_API_KEY: process.env.WHOIS_API_KEY || '',
       },
+      bundling,
       logRetention: logs.RetentionDays.ONE_WEEK,
     })
 
-    // Lambda: GetReview
-    const getReviewFn = new lambda.Function(this, 'GetReviewFn', {
-      runtime: lambda.Runtime.NODEJS_20_X,
-      handler: 'index.handler',
-      code: lambda.Code.fromAsset(path.join(__dirname, '../../backend/dist/functions/get-review')),
+    // Lambda: GetReview (GET /review/:id)
+    const getReviewFn = new NodejsFunction(this, 'GetReviewFn', {
+      runtime: Runtime.NODEJS_20_X,
+      entry: backendEntry('get-review'),
+      handler: 'handler',
       timeout: cdk.Duration.seconds(5),
       memorySize: 128,
-      environment: lambdaEnvironment,
+      environment: sharedEnv,
+      bundling,
       logRetention: logs.RetentionDays.ONE_WEEK,
     })
 
-    // Lambda: ListReviews
-    const listReviewsFn = new lambda.Function(this, 'ListReviewsFn', {
-      runtime: lambda.Runtime.NODEJS_20_X,
-      handler: 'index.handler',
-      code: lambda.Code.fromAsset(path.join(__dirname, '../../backend/dist/functions/list-reviews')),
+    // Lambda: ListReviews (GET /reviews)
+    const listReviewsFn = new NodejsFunction(this, 'ListReviewsFn', {
+      runtime: Runtime.NODEJS_20_X,
+      entry: backendEntry('list-reviews'),
+      handler: 'handler',
       timeout: cdk.Duration.seconds(5),
       memorySize: 128,
-      environment: lambdaEnvironment,
+      environment: sharedEnv,
+      bundling,
       logRetention: logs.RetentionDays.ONE_WEEK,
     })
 
-    // Grant DynamoDB access
+    // Grant DynamoDB access (least privilege)
     reviewsTable.grantReadWriteData(reviewMerchantFn)
     reviewsTable.grantReadData(getReviewFn)
     reviewsTable.grantReadData(listReviewsFn)
@@ -72,6 +87,7 @@ export class MerchantRiskAgentStack extends cdk.Stack {
       defaultCorsPreflightOptions: {
         allowOrigins: apigateway.Cors.ALL_ORIGINS,
         allowMethods: apigateway.Cors.ALL_METHODS,
+        allowHeaders: ['Content-Type', 'Authorization'],
       },
     })
 
@@ -90,7 +106,12 @@ export class MerchantRiskAgentStack extends cdk.Stack {
     // Outputs
     new cdk.CfnOutput(this, 'ApiUrl', {
       value: api.url,
-      description: 'API Gateway URL',
+      description: 'API Gateway endpoint URL',
+    })
+
+    new cdk.CfnOutput(this, 'TableName', {
+      value: reviewsTable.tableName,
+      description: 'DynamoDB table name',
     })
   }
 }

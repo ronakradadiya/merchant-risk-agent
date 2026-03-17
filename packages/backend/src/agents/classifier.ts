@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid'
 import { MerchantInput, RiskDecision, ToolSignals } from '@merchant-risk-agent/shared'
 import { Policy } from '@merchant-risk-agent/shared'
-import { openai } from '../lib/openai'
+import { getOpenAI } from '../lib/openai'
 import { INDIA_UPI_FRAUD_POLICIES } from '../policies/india-upi-fraud'
 import { TOOL_DEFINITIONS, executeTool } from './tools'
 import type { ChatCompletionMessageParam } from 'openai/resources/chat/completions'
@@ -75,7 +75,7 @@ export async function classifyMerchant(input: MerchantInput): Promise<RiskDecisi
 
   // Agentic loop
   for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
-    const response = await openai.chat.completions.create({
+    const response = await getOpenAI().chat.completions.create({
       model: 'gpt-4o',
       messages: [
         { role: 'system', content: buildSystemPrompt(INDIA_UPI_FRAUD_POLICIES) },
@@ -96,7 +96,10 @@ export async function classifyMerchant(input: MerchantInput): Promise<RiskDecisi
       }
 
       console.log(`[classifier] Final decision after ${round} tool round(s)`)
-      const parsed = JSON.parse(content)
+
+      // Strip markdown code fences if present
+      const cleanContent = content.replace(/^```(?:json)?\s*\n?/m, '').replace(/\n?```\s*$/m, '').trim()
+      const parsed = JSON.parse(cleanContent)
 
       return {
         id: uuidv4(),

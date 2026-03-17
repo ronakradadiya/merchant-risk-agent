@@ -9,6 +9,8 @@
     "test:classifier": "ts-node-dev src/test-classifier.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.1010.0",
+    "@aws-sdk/lib-dynamodb": "^3.1010.0",
     "@merchant-risk-agent/shared": "*",
     "cors": "^2.8.5",
     "dotenv": "^17.3.1",
@@ -17,6 +19,7 @@
     "uuid": "^10.0.0"
   },
   "devDependencies": {
+    "@types/aws-lambda": "^8.10.161",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
     "@types/node": "^22.0.0",
