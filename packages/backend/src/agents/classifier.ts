@@ -30,7 +30,7 @@ You have access to 4 investigative tools. USE THEM before making your final deci
 
 ## Instructions
 1. First, call the relevant tools to gather signals. You should call check_upi_pattern for every merchant. Call check_domain_age if a website URL is provided. Call web_search to look for fraud complaints. Call check_india_compliance to verify location and GST signals for P5 and P6.
-2. After receiving tool results, evaluate the merchant against ALL 6 policies using both the merchant data and tool signals.
+2. After receiving tool results, evaluate the merchant against ALL 7 policies using both the merchant data and tool signals. P7 (AI-generated profile) requires no tool — evaluate it directly from the merchant input text.
 3. Calculate a risk score from 0-100 based on the severity and number of policies triggered:
    - critical policy triggered: +25-30 points each
    - high policy triggered: +15-20 points each

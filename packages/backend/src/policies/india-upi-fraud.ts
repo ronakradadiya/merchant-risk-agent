@@ -82,4 +82,18 @@ export const INDIA_UPI_FRAUD_POLICIES: Policy[] = [
     to verify merchant GST compliance. Merchant onboarding gaps are cited as
     a direct threat to UPI network integrity.`,
   },
+  {
+    id: 'P7',
+    name: 'AI-generated merchant profile',
+    severity: 'critical',
+    rule: `Flag merchants whose profile shows signs of AI generation —
+    unnaturally consistent formatting, generic business descriptions
+    with no human irregularities, perfectly structured sentences with
+    no spelling variations, business names following predictable
+    patterns, descriptions that read like marketing copy rather than
+    real business communication. Scammers now use LLMs to generate
+    thousands of convincing fake merchant identities at scale. This
+    is the emerging threat in UPI fraud witnessed firsthand by fraud
+    investigators in India in 2025.`,
+  },
 ]
