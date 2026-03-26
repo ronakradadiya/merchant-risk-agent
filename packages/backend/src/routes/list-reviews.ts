@@ -3,7 +3,7 @@ import { listReviews } from '../store'
 
 export const listReviewsRouter = Router()
 
-listReviewsRouter.get('/reviews', (_req, res) => {
-  const reviews = listReviews()
+listReviewsRouter.get('/reviews', async (_req, res) => {
+  const reviews = await listReviews()
   res.json(reviews)
 })

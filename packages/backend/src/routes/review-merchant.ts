@@ -6,7 +6,6 @@ import { saveReview } from '../store'
 export const reviewMerchantRouter = Router()
 
 reviewMerchantRouter.post('/review-merchant', async (req, res) => {
-  // Validate input with Zod
   const parsed = MerchantInputSchema.safeParse(req.body)
   if (!parsed.success) {
     res.status(400).json({
@@ -18,7 +17,7 @@ reviewMerchantRouter.post('/review-merchant', async (req, res) => {
 
   try {
     const decision = await classifyMerchant(parsed.data)
-    saveReview(decision)
+    await saveReview(decision)
     res.json(decision)
   } catch (err) {
     console.error('Classification failed:', err)
