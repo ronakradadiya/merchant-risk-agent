@@ -6,7 +6,8 @@
   "scripts": {
     "build": "tsc",
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
-    "test:classifier": "ts-node-dev src/test-classifier.ts"
+    "test:classifier": "ts-node-dev src/test-classifier.ts",
+    "seed": "ts-node-dev src/seed-demo.ts"
   },
   "dependencies": {
     "@merchant-risk-agent/shared": "*",
