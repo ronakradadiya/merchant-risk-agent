@@ -198,10 +198,7 @@ export function RiskDecisionCard({ decision }: { decision: RiskDecision }) {
             signal('Confidence', decision.toolSignals.typosquatConfidence, (v) => `${Math.round(v * 100)}%`, v => typeof v === 'number' && v > 0.5),
           ]} />
 
-          <ToolGroup icon={MapPin} title="India Compliance" tag="P5/P6" color="teal" signals={[
-            signal('Phone State', decision.toolSignals.phoneStateMatch, (v) => v ? 'Match' : 'Mismatch', v => v === false),
-            signal('IP Location', decision.toolSignals.ipLocationMatch, (v) => v ? 'Match' : 'Mismatch', v => v === false),
-            signal('Server in India', decision.toolSignals.serverLocationIndia, (v) => v ? 'Yes' : 'No', v => v === false),
+          <ToolGroup icon={MapPin} title="GST Compliance" tag="P5" color="teal" signals={[
             signal('GST Format', decision.toolSignals.gstFormatValid, (v) => v ? 'Valid' : 'Invalid', v => v === false),
             signal('GST State', decision.toolSignals.gstStateMatch, (v) => v ? 'Match' : 'Mismatch', v => v === false),
             signal('GST Active', decision.toolSignals.gstActiveStatus, (v) => v ? 'Active' : 'Inactive', v => v === false),
@@ -255,7 +252,7 @@ function getSeverity(policyStr: string): string {
   const id = policyStr.match(/^P(\d)/)?.[1]
   if (!id) return 'FAIL'
   const num = parseInt(id)
-  if (num <= 2 || num === 7) return 'CRITICAL'
+  if (num <= 2) return 'CRITICAL'
   if (num <= 4) return 'HIGH'
   return 'MEDIUM'
 }

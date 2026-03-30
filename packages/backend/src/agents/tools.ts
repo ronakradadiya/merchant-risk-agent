@@ -240,24 +240,7 @@ function levenshtein(a: string, b: string): number {
   return dp[m][n]
 }
 
-// --- Tool 4: India compliance checker (P5 + P6) ---
-
-// TRAI phone prefix → state mapping
-const PHONE_STATE_PREFIXES: Record<string, string> = {
-  '9820': 'Maharashtra', '9821': 'Maharashtra', '9822': 'Maharashtra',
-  '9823': 'Maharashtra', '9850': 'Maharashtra', '9860': 'Maharashtra',
-  '9415': 'Uttar Pradesh', '9416': 'Haryana', '9430': 'Jharkhand',
-  '9831': 'West Bengal', '9832': 'West Bengal',
-  '9829': 'Rajasthan', '9828': 'Rajasthan',
-  '9845': 'Karnataka', '9844': 'Karnataka', '9880': 'Karnataka',
-  '9840': 'Tamil Nadu', '9841': 'Tamil Nadu',
-  '9810': 'Delhi', '9811': 'Delhi', '9818': 'Delhi',
-  '9848': 'Telangana', '9849': 'Andhra Pradesh',
-  '9825': 'Gujarat', '9824': 'Gujarat',
-  '9830': 'West Bengal', '9836': 'West Bengal',
-  '9870': 'Maharashtra', '9871': 'Delhi', '9872': 'Punjab',
-  '9876': 'Punjab', '9878': 'Punjab',
-}
+// --- Tool 4: GST compliance checker (P5) ---
 
 // GST state codes
 const GST_STATE_CODES: Record<string, string> = {
@@ -276,57 +259,6 @@ const GST_STATE_CODES: Record<string, string> = {
 
 // GSTIN format: 2-digit state + 10-char PAN + 1 digit + Z + 1 check
 const GSTIN_REGEX = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/
-
-function checkPhonePrefix(phoneNumber: string | undefined, statedLocation: string): boolean | null {
-  if (!phoneNumber) return null
-  const digits = phoneNumber.replace(/\D/g, '')
-  // Try 4-digit prefix (after country code)
-  const prefix = digits.startsWith('91') ? digits.substring(2, 6) : digits.substring(0, 4)
-  const phoneState = PHONE_STATE_PREFIXES[prefix]
-  if (!phoneState) return null // Unknown prefix
-  return statedLocation.toLowerCase().includes(phoneState.toLowerCase())
-}
-
-async function checkIpLocation(submissionIp: string | undefined, statedLocation: string): Promise<boolean | null> {
-  if (!submissionIp) return null
-  try {
-    const res = await fetch(`http://ip-api.com/json/${submissionIp}?fields=status,regionName,city,country`, {
-      signal: AbortSignal.timeout(5000),
-    })
-    if (!res.ok) return null
-    const data = (await res.json()) as { status: string; regionName?: string; city?: string; country?: string }
-    if (data.status !== 'success') return null
-    const location = `${data.city} ${data.regionName} ${data.country}`.toLowerCase()
-    return statedLocation.toLowerCase().split(/[\s,]+/).some((word) => location.includes(word))
-  } catch {
-    return null
-  }
-}
-
-async function checkDomainHostingLocation(websiteDomain: string | undefined): Promise<boolean | null> {
-  if (!websiteDomain) return null
-  try {
-    // Resolve domain to IP via DNS-over-HTTPS
-    const dnsRes = await fetch(`https://dns.google/resolve?name=${encodeURIComponent(websiteDomain)}&type=A`, {
-      signal: AbortSignal.timeout(5000),
-    })
-    if (!dnsRes.ok) return null
-    const dnsData = (await dnsRes.json()) as { Answer?: { data: string }[] }
-    const ip = dnsData.Answer?.[0]?.data
-    if (!ip) return null
-
-    // Check if IP is in India
-    const geoRes = await fetch(`http://ip-api.com/json/${ip}?fields=status,country,countryCode`, {
-      signal: AbortSignal.timeout(5000),
-    })
-    if (!geoRes.ok) return null
-    const geoData = (await geoRes.json()) as { status: string; countryCode?: string }
-    if (geoData.status !== 'success') return null
-    return geoData.countryCode === 'IN'
-  } catch {
-    return null
-  }
-}
 
 function validateGSTIN(gstNumber: string): boolean {
   return GSTIN_REGEX.test(gstNumber.toUpperCase())
@@ -358,29 +290,16 @@ async function verifyGSTActive(gstNumber: string): Promise<boolean | null> {
 }
 
 export async function checkIndiaCompliance(input: {
-  phoneNumber?: string
   gstNumber?: string
   statedLocation: string
-  submissionIp?: string
-  websiteDomain?: string
 }): Promise<{
-  phoneStateMatch: boolean | null
-  ipLocationMatch: boolean | null
-  serverLocationIndia: boolean | null
   gstFormatValid: boolean | null
   gstStateMatch: boolean | null
   gstActiveStatus: boolean | null
 }> {
-  const [ipLocationMatch, serverLocationIndia, gstActiveStatus] = await Promise.all([
-    checkIpLocation(input.submissionIp, input.statedLocation),
-    checkDomainHostingLocation(input.websiteDomain),
-    input.gstNumber ? verifyGSTActive(input.gstNumber) : Promise.resolve(null),
-  ])
+  const gstActiveStatus = input.gstNumber ? await verifyGSTActive(input.gstNumber) : null
 
   return {
-    phoneStateMatch: checkPhonePrefix(input.phoneNumber, input.statedLocation),
-    ipLocationMatch,
-    serverLocationIndia,
     gstFormatValid: input.gstNumber ? validateGSTIN(input.gstNumber) : null,
     gstStateMatch: input.gstNumber ? checkGSTState(input.gstNumber, input.statedLocation) : null,
     gstActiveStatus,
@@ -417,9 +336,6 @@ export async function executeTool(
     }
     case 'check_india_compliance': {
       const result = await checkIndiaCompliance(args)
-      toolSignals.phoneStateMatch = result.phoneStateMatch ?? undefined
-      toolSignals.ipLocationMatch = result.ipLocationMatch ?? undefined
-      toolSignals.serverLocationIndia = result.serverLocationIndia ?? undefined
       toolSignals.gstFormatValid = result.gstFormatValid ?? undefined
       toolSignals.gstStateMatch = result.gstStateMatch ?? undefined
       toolSignals.gstActiveStatus = result.gstActiveStatus ?? undefined
@@ -485,15 +401,12 @@ export const TOOL_DEFINITIONS: {
     type: 'function',
     function: {
       name: 'check_india_compliance',
-      description: 'Check P5 location signals (phone prefix, IP, server) and P6 GST signals (format, state match, active status)',
+      description: 'Check P5 GST compliance signals (format validity, state match, active status)',
       parameters: {
         type: 'object',
         properties: {
-          phoneNumber: { type: 'string', description: 'Merchant phone number e.g. +919820123456' },
           gstNumber: { type: 'string', description: 'GSTIN e.g. 27AAPFU0939F1ZV' },
           statedLocation: { type: 'string', description: 'Merchant stated business location' },
-          submissionIp: { type: 'string', description: 'IP address of submission' },
-          websiteDomain: { type: 'string', description: 'Website domain e.g. shopeasyelec.in' },
         },
         required: ['statedLocation'],
       },

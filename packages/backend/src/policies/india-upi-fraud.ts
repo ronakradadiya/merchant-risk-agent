@@ -7,7 +7,12 @@ export const INDIA_UPI_FRAUD_POLICIES: Policy[] = [
     severity: 'critical',
     rule: `Flag any merchant account less than 30 days old that meets EITHER of
     these conditions:
-    (1) Processing more than 500 transactions per month, OR
+    (1) Processing more than 500 transactions per month — this is a strong signal
+        for high-ticket businesses (electronics, investment, loans) but should be
+        weighted less heavily for low-ticket high-frequency businesses (food delivery,
+        courier, grocery) where 500 transactions at small amounts is normal early
+        growth behavior. Always consider the average transaction value alongside
+        transaction count.
     (2) Monthly GMV (transactions × average transaction value) exceeds Rs 25 lakh —
         this annualizes to Rs 3 crore, far above the threshold for a new account
         with no established reputation. Even at lower transaction counts, a new

@@ -38,7 +38,7 @@ You have access to 4 investigative tools. USE THEM before making your final deci
    Cap at 100. Do NOT trigger policies that do not clearly apply — accuracy matters more
    than finding violations. When in doubt about whether a policy applies, do NOT trigger it.
    CRITICAL calibration checks:
-   - P1 requires account age < 30 days AND (txns > 500 OR monthly GMV > Rs 25 lakh). If account is ≥ 30 days old, P1 does NOT apply — do not trigger it.
+   - P1 requires account age < 30 days AND (monthly GMV > Rs 25 lakh OR txns > 500). For condition (1), txn count alone is NOT sufficient for low-ticket businesses (food delivery, courier, grocery) — a courier processing 680 × Rs 450 = Rs 3 lakh GMV is normal early growth, not fraud. Only flag on txn count alone when the business type is high-ticket (electronics, investment, loans). If account is ≥ 30 days old, P1 does NOT apply.
    - P3 requires an ONLINE platform AND electronics AND < 60 days old AND avg > Rs 10,000. Do NOT trigger for clothing, food, groceries, or physical retail.
    - P4 requires a website URL to be provided. No website = skip entirely.
    - P5 requires GMV > Rs 2,00,000/month with no GST (or invalid GSTIN). At low GMV, do NOT trigger P5.

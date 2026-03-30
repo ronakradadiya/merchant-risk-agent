@@ -15,10 +15,7 @@ export const ToolSignalsSchema = z.object({
   typosquatConfidence: z.number().min(0).max(1).optional(),
   linkedScamVPAs: z.number().optional(),
 
-  // Tool 4 — India compliance check (P5, P6)
-  phoneStateMatch: z.boolean().optional(),
-  ipLocationMatch: z.boolean().optional(),
-  serverLocationIndia: z.boolean().optional(),
+  // Tool 4 — GST compliance check (P5)
   gstFormatValid: z.boolean().optional(),
   gstStateMatch: z.boolean().optional(),
   gstActiveStatus: z.boolean().optional(),
