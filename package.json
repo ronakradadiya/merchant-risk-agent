@@ -12,6 +12,7 @@
     "build": "npm run build --workspaces",
     "dev:backend": "npm run dev --workspace=packages/backend",
     "dev:frontend": "npm run dev --workspace=packages/frontend",
-    "typecheck": "tsc --noEmit --workspaces"
+    "typecheck": "tsc --noEmit --workspaces",
+    "evaluate": "npx ts-node --project scripts/tsconfig.json scripts/evaluate.ts"
   }
 }

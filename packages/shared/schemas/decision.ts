@@ -30,6 +30,8 @@ export const RiskDecisionSchema = z.object({
   riskScore: z.number().min(0).max(100),
   riskLevel: z.enum(['low', 'medium', 'high']),
   recommendedAction: z.enum(['approve', 'review', 'reject']),
+  confidenceScore: z.number().min(0).max(100),
+  confidenceReason: z.string(),
   policiesTriggered: z.array(z.string()),
   policiesPassed: z.array(z.string()),
   toolSignals: ToolSignalsSchema,

@@ -81,10 +81,29 @@ export class MerchantRiskAgentStack extends cdk.Stack {
       },
     })
 
+    // Lambda: GetAnalytics
+    const getAnalyticsFn = new NodejsFunction(this, 'GetAnalyticsFn', {
+      runtime: Runtime.NODEJS_20_X,
+      entry: path.join(backendPath, 'functions/get-analytics/index.ts'),
+      handler: 'handler',
+      timeout: cdk.Duration.seconds(10),
+      memorySize: 128,
+      environment: {
+        DYNAMODB_TABLE_NAME: reviewsTable.tableName,
+        NODE_OPTIONS: '--enable-source-maps',
+      },
+      logRetention: logs.RetentionDays.ONE_WEEK,
+      bundling: {
+        externalModules: ['@aws-sdk/*'],
+        sourceMap: true,
+      },
+    })
+
     // Grant DynamoDB access
     reviewsTable.grantReadWriteData(reviewMerchantFn)
     reviewsTable.grantReadData(getReviewFn)
     reviewsTable.grantReadData(listReviewsFn)
+    reviewsTable.grantReadData(getAnalyticsFn)
 
     // API Gateway
     const api = new apigateway.RestApi(this, 'MerchantRiskApi', {
@@ -106,6 +125,10 @@ export class MerchantRiskAgentStack extends cdk.Stack {
     // GET /reviews
     const reviewsResource = api.root.addResource('reviews')
     reviewsResource.addMethod('GET', new apigateway.LambdaIntegration(listReviewsFn))
+
+    // GET /analytics
+    const analyticsResource = api.root.addResource('analytics')
+    analyticsResource.addMethod('GET', new apigateway.LambdaIntegration(getAnalyticsFn))
 
     // Outputs
     new cdk.CfnOutput(this, 'ApiUrl', {
