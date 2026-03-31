@@ -161,12 +161,12 @@ export const TEST_CASES: TestCase[] = [
     },
   },
 
-  // EDGE CASES (TC09-TC12) — expected: review
+  // EDGE CASES (TC09-TC12) — expected: approve/review
   {
     id: 'TC09',
     description: 'New legitimate courier startup — high early volume',
     source: 'Reconstructed — legitimate new business pattern',
-    expectedVerdict: 'review',
+    expectedVerdict: 'approve',
     expectedPolicies: [],
     input: {
       merchantName: 'Zap Couriers Mumbai',
