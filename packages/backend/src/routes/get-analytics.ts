@@ -1,24 +1,14 @@
-import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda'
-import { listDynamoReviews, listDynamoReviewsSince } from '../../lib/dynamo'
-import { INDIA_UPI_FRAUD_POLICIES } from '../../policies/india-upi-fraud'
+import { Router } from 'express'
+import { listReviews } from '../store'
+import { INDIA_UPI_FRAUD_POLICIES } from '../policies/india-upi-fraud'
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET,OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
-}
+export const getAnalyticsRouter = Router()
 
-export async function handler(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
-  if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 200, headers: corsHeaders, body: '' }
-  }
-
+getAnalyticsRouter.get('/analytics', async (_req, res) => {
   try {
     const since30Days = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
-    const [allReviews, last30Reviews] = await Promise.all([
-      listDynamoReviews(),
-      listDynamoReviewsSince(since30Days),
-    ])
+    const allReviews = await listReviews()
+    const last30Reviews = allReviews.filter((r) => r.reviewedAt >= since30Days)
 
     const total = allReviews.length
     const last30 = last30Reviews.length
@@ -63,24 +53,16 @@ export async function handler(event: APIGatewayProxyEvent): Promise<APIGatewayPr
       ? Math.round(confidences.reduce((a: number, b: number) => a + b, 0) / confidences.length)
       : 0
 
-    return {
-      statusCode: 200,
-      headers: corsHeaders,
-      body: JSON.stringify({
-        totalReviews: total,
-        last30Days: last30,
-        policyFrequency,
-        verdictBreakdown,
-        avgRiskScore,
-        avgConfidence,
-      }),
-    }
+    res.json({
+      totalReviews: total,
+      last30Days: last30,
+      policyFrequency,
+      verdictBreakdown,
+      avgRiskScore,
+      avgConfidence,
+    })
   } catch (err) {
     console.error('Analytics failed:', err)
-    return {
-      statusCode: 500,
-      headers: corsHeaders,
-      body: JSON.stringify({ error: 'Internal server error' }),
-    }
+    res.status(500).json({ error: 'Internal server error' })
   }
-}
+})

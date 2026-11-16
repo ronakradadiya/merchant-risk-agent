@@ -6,14 +6,10 @@
   "scripts": {
     "build": "tsc",
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
-    "test:classifier": "ts-node-dev src/test-classifier.ts",
-    "seed": "ts-node-dev src/seed-demo.ts"
+    "test:classifier": "ts-node-dev src/test-classifier.ts"
   },
   "dependencies": {
-    "@aws-sdk/client-dynamodb": "^3.1018.0",
-    "@aws-sdk/lib-dynamodb": "^3.1018.0",
     "@merchant-risk-agent/shared": "*",
-    "@types/aws-lambda": "^8.10.161",
     "cors": "^2.8.5",
     "dotenv": "^17.3.1",
     "express": "^4.21.0",
