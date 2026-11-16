@@ -39,12 +39,12 @@ Merchant Input (Zod validated)
   └── LLM Reasoning
         |
         v
-  DynamoDB (persisted) → Investigator Dashboard
+  In-memory store → Investigator Dashboard
 ```
 
 ## Tech Stack
 
-TypeScript monorepo: Next.js 14 + shadcn/ui frontend, Express + GPT-4o backend, AWS CDK infrastructure (Lambda + API Gateway + DynamoDB), Zod shared schemas, GitHub Actions CI/CD.
+TypeScript monorepo: Next.js 14 + shadcn/ui frontend, Express + GPT-4o backend, Zod shared schemas.
 
 ## Getting Started
 
@@ -59,9 +59,6 @@ cp packages/backend/.env.example packages/backend/.env
 npm run dev:backend    # port 3001
 npm run dev:frontend   # port 3000
 
-# Deploy to AWS
-cd packages/infra && npx cdk deploy
-
-# Seed demo data
-cd packages/backend && npm run seed
+# Seed test cases (backend must be running)
+npx ts-node --project scripts/tsconfig.json scripts/seed-test-cases.ts
 ```

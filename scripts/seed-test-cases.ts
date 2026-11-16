@@ -1,5 +1,5 @@
-// Seeds all 15 test cases into DynamoDB by calling the live API
-// Run: API_URL=https://... npx ts-node --project scripts/tsconfig.json scripts/seed-test-cases.ts
+// Seeds all 15 test cases by calling the backend API
+// Run: API_URL=http://localhost:3001 npx ts-node --project scripts/tsconfig.json scripts/seed-test-cases.ts
 
 import { TEST_CASES } from './test-cases'
 

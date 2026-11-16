@@ -9,5 +9,4 @@ coverage/
 .idea/
 .vscode/
 .next/
-cdk.out/
 PLAN.md

@@ -4,6 +4,7 @@ import cors from 'cors'
 import { reviewMerchantRouter } from './routes/review-merchant'
 import { getReviewRouter } from './routes/get-review'
 import { listReviewsRouter } from './routes/list-reviews'
+import { getAnalyticsRouter } from './routes/get-analytics'
 
 const app = express()
 const PORT = process.env.PORT || 3001
@@ -14,6 +15,7 @@ app.use(express.json())
 app.use(reviewMerchantRouter)
 app.use(getReviewRouter)
 app.use(listReviewsRouter)
+app.use(getAnalyticsRouter)
 
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok' })
